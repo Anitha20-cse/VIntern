@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Virtual Internship  System</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background: #f0f2f5;
+    }
+    header {
+      background: #4a90e2;
+      color: white;
+      padding: 1rem;
+      text-align: center;
+      font-size: 1.5rem;
+    }
+    nav {
+      display: flex;
+      justify-content: center;
+      background: #fff;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    nav button {
+      padding: 1rem 2rem;
+      border: none;
+      background: none;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: 0.3s;
+    }
+    nav button:hover {
+      background: #e6f0ff;
+    }
+    .container {
+      padding: 2rem;
+    }
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    input, textarea, select, button {
+      width: 100%;
+      padding: 0.8rem;
+      margin: 0.5rem 0;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+    }
+    button.add-btn {
+      background: #4a90e2;
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    button.add-btn:hover {
+      background: #357ab7;
+    }
+    .list {
+      margin-top: 1rem;
+    }
+    .list-item {
+      background: #f9f9f9;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 0.5rem;
+      border-left: 5px solid #4a90e2;
+    }
+    .register-btn {
+      background: #28a745;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      float: right;
+    }
+    .register-btn:hover {
+      background: #1e7e34;
+    }
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <header>🌐 Virtual Internship Management System</header>
+  <nav>
+    <button onclick="showDashboard('manager')">Manager Dashboard</button>
+    <button onclick="showDashboard('student')">Student Dashboard</button>
+  </nav>
+
+  <div class="container">
+     
+    <!-- Manager Dashboard -->
+    <div id="manager" class="dashboard">
+      <div class="card">
+        <h2>Add Internship</h2>
+        <input type="text" id="internshipTitle" placeholder="Internship Title">
+        <textarea id="internshipDesc" placeholder="Internship Description"></textarea>
+        <button class="add-btn" onclick="addInternship()">Add Internship</button>
+      </div>
+
+      <div class="card">
+        <h2>Add Task</h2>
+        <select id="taskInternship"></select>
+        <input type="text" id="taskTitle" placeholder="Task Title">
+        <textarea id="taskDesc" placeholder="Task Description"></textarea>
+        <button class="add-btn" onclick="addTask()">Add Task</button>
+      </div>
+    </div>
+
+    <!-- Student Dashboard -->
+    <div id="student" class="dashboard hidden">
+      <div class="card">
+        <h2>Available Internships</h2>
+        <div id="internshipList" class="list"></div>
+      </div>
+      <div class="card">
+        <h2>Tasks</h2>
+        <div id="taskList" class="list"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    let internships = [];
+    let tasks = [];
+
+    function showDashboard(type) {
+      document.getElementById('manager').classList.add('hidden');
+      document.getElementById('student').classList.add('hidden');
+      document.getElementById(type).classList.remove('hidden');
+      if (type === 'student') renderStudentView();
+    }
+
+    function addInternship() {
+      let title = document.getElementById('internshipTitle').value;
+      let desc = document.getElementById('internshipDesc').value;
+      if (title.trim() === "") return alert("Please enter internship title");
+      internships.push({ title, desc, registered: false });
+      document.getElementById('internshipTitle').value = "";
+      document.getElementById('internshipDesc').value = "";
+      updateTaskInternshipDropdown();
+      alert("Internship added successfully!");
+    }
+
+    function updateTaskInternshipDropdown() {
+      let dropdown = document.getElementById('taskInternship');
+      dropdown.innerHTML = "";
+      internships.forEach((intern, index) => {
+        let option = document.createElement('option');
+        option.value = index;
+        option.textContent = intern.title;
+        dropdown.appendChild(option);
+      });
+    }
+
+    function addTask() {
+      let index = document.getElementById('taskInternship').value;
+      let title = document.getElementById('taskTitle').value;
+      let desc = document.getElementById('taskDesc').value;
+      if (title.trim() === "") return alert("Please enter task title");
+      tasks.push({ internshipIndex: index, title, desc });
+      document.getElementById('taskTitle').value = "";
+      document.getElementById('taskDesc').value = "";
+      alert("Task added successfully!");
+    }
+
+    function renderStudentView() {
+      let internshipList = document.getElementById('internshipList');
+      internshipList.innerHTML = "";
+      internships.forEach((intern, index) => {
+        let div = document.createElement('div');
+        div.className = "list-item";
+        div.innerHTML = `<strong>${intern.title}</strong><br>${intern.desc}
+                         <button class="register-btn" onclick="registerInternship(${index})">
+                         ${intern.registered ? "Registered" : "Register"}</button>`;
+        internshipList.appendChild(div);
+      });
+
+      let taskList = document.getElementById('taskList');
+      taskList.innerHTML = "";
+      tasks.forEach(task => {
+        let div = document.createElement('div');
+        div.className = "list-item";
+        div.innerHTML = `<strong>${internships[task.internshipIndex]?.title} - ${task.title}</strong><br>${task.desc}`;
+        taskList.appendChild(div);
+      });
+    }
+
+    function registerInternship(index) {
+      internships[index].registered = true;
+      renderStudentView();
+      alert("You have registered for " + internships[index].title);
+    }
+  </script>
+</body>
+</html>
